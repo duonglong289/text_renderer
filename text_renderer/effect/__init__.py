@@ -6,6 +6,7 @@ from .dropout_vertical import DropoutVertical
 from .line import Line
 from .padding import Padding
 from .imgaug_effect import ImgAugEffect, Emboss, MotionBlur
+from .dots import Dots
 
 
 __all__ = [
@@ -20,5 +21,6 @@ __all__ = [
     "Padding",
     "ImgAugEffect",
     "Emboss",
-    "MotionBlur"
+    "MotionBlur",
+    "Dots"
 ]

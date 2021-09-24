@@ -16,3 +16,11 @@ notebook
 text_renderer.egg-info/
 workspace
 workspace2
+*.zip
+*.ttf
+*.TTF 
+*.otf
+*.DS_Store
+__MACOSX
+example_data/dev
+*.json
