@@ -97,10 +97,15 @@ class Render:
         # corpus text_color has higher priority than RenderCfg.text_color_cfg
         if self.corpus.cfg.text_color_cfg is not None:
             text_color = self.corpus.cfg.text_color_cfg.get_color(bg)
-
+        
         text_mask = draw_text_on_bg(
             font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
         )
+
+        if self.cfg.custom_corpus_effects is not None:
+            text_mask, _ = self.cfg.custom_corpus_effects.apply_effects(
+                text_mask, BBox.from_size(text_mask.size), font_text=font_text
+            )
 
         if self.cfg.corpus_effects is not None:
             text_mask, _ = self.cfg.corpus_effects.apply_effects(
@@ -150,6 +155,12 @@ class Render:
             )
 
             text_bbox = BBox.from_size(text_mask.size)
+
+            if self.cfg.custom_corpus_effects is not None:
+                effects = self.cfg.custom_corpus_effects[i]
+                if effects is not None:
+                    text_mask, text_bbox = effects.apply_effects(text_mask, text_bbox)
+
             if self.cfg.corpus_effects is not None:
                 effects = self.cfg.corpus_effects[i]
                 if effects is not None:

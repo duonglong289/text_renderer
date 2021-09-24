@@ -121,3 +121,33 @@ class Effects:
         for e in self.effects:
             img, bbox = e(img, bbox)
         return img, bbox
+
+class CustomEffects:
+    """
+    Apply multiple effects
+    """
+
+    def __init__(self, effects: Union[Effect, List[Effect], Selector, List[Selector]]):
+        """
+
+        Parameters
+        ----------
+        effects : Effect or List[Effect]
+        """
+        if not isinstance(effects, list):
+            effects = [effects]
+        self.effects = effects
+
+    def apply_effects(self, img: PILImage, bbox: BBox, font_text) -> Tuple[PILImage, BBox]:
+        """
+
+        Args:
+            img:
+            bbox: bbox of text on input Image
+
+        Returns:
+
+        """
+        for e in self.effects:
+            img, bbox = e(img, bbox, font_text)
+        return img, bbox

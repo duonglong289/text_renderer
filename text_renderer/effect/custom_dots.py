@@ -14,7 +14,7 @@ if typing.TYPE_CHECKING:
 
 from .base_effect import Effect
 
-class Dots(Effect):
+class CustomDots(Effect):
     def __init__(
             self,
             p=0.5,
@@ -35,15 +35,18 @@ class Dots(Effect):
         self.line_pos_p = line_pos_p
         self.color_cfg = color_cfg
     
-    def apply(self, img: PILImage, text_bbox: BBox) -> Tuple[PILImage, BBox]:
+    def __call__(self, img: PILImage, text_bbox: BBox, font_text) -> Tuple[PILImage, BBox]:
+        return self.apply(img, text_bbox, font_text)
+
+    def apply(self, img: PILImage, text_bbox: BBox, font_text) -> Tuple[PILImage, BBox]:
         func = np.random.choice(
             [
                 self.apply_bottom
             ]
         )
-        return func(img, text_bbox)
+        return func(img, text_bbox, font_text)
 
-    def apply_bottom(self, img: PILImage, text_bbox: BBox) -> Tuple[PILImage, BBox]:
+    def apply_bottom(self, img: PILImage, text_bbox: BBox, font_text) -> Tuple[PILImage, BBox]:
         in_offset, thickness, out_offset = self._get_tb_param()
         new_w = img.width
         new_h = img.height + thickness + in_offset + out_offset
@@ -54,12 +57,19 @@ class Dots(Effect):
         draw = ImageDraw.Draw(new_img)
 
         text_bbox.bottom += in_offset
+        
+        if font_text.meta['underdot_index'] != []:
+            for underdot_index in font_text.meta['underdot_index']:
+                text = font_text.text
+                xy = font_text.xy
+                font = font_text.font 
 
-        line_pixels = xiaoline(text_bbox.left_bottom, text_bbox.right_bottom)
-        for i, pts in enumerate(line_pixels):
-            if i % 10 == 0:
-                x, y = pts
-                draw.ellipse((x-thickness, y-thickness, x+thickness, y+thickness), fill = 'blue', outline ='blue')
+                left_bottom, right_bottom = self._get_rendered_underdot_index(underdot_index, text, xy, font)
+                line_pixels = xiaoline(left_bottom, right_bottom)
+                for i, pts in enumerate(line_pixels):
+                    if i % 10 == 0:
+                        x, y = pts
+                        draw.ellipse((x-thickness, y-thickness, x+thickness, y+thickness), fill = 'blue', outline ='blue')
 
         text_bbox.bottom += thickness
         text_bbox.bottom += out_offset
@@ -83,6 +93,25 @@ class Dots(Effect):
             np.random.randint(0, 170),
             np.random.randint(90, 255),
         )
+    
+    def _get_rendered_underdot_index(self, underdot_index, text, xy, font):
+        start, end = underdot_index
+
+        right1, bottom1 = font.getsize(text[:end])
+        right2, bottom2 = font.getsize(text[:start])
+
+        if bottom2 == 0:
+            bottom2 = bottom1
+
+        right1 += xy[0]
+        right2 += xy[0]
+        bottom1 += xy[1]
+        bottom2 += xy[1]
+
+        left_bottom = (right2, bottom2)
+        right_bottom = (right1, bottom1)
+
+        return left_bottom, right_bottom
 
 def xiaoline(p0, p1):
     x0, y0 = p0

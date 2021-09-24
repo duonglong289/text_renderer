@@ -20,10 +20,10 @@ def story_data():
             bg_dir=CURRENT_DIR / "example_data/bg",
             height=32,
             perspective_transform=NormPerspectiveTransformCfg(20, 20, 1.5),
-            corpus=WordCorpus(
-                WordCorpusCfg(
-                    text_paths=[CURRENT_DIR / "example_data/text/kv_text.txt"],
-                    font_dir=CURRENT_DIR / "example_data/font/vie",
+            corpus=DictCorpus(
+                DictCorpusCfg(
+                    text_paths=[CURRENT_DIR / "example_data/text/dots_corpus.json"],
+                    font_dir=CURRENT_DIR / "example_data/font",
                     font_size=(20, 30),
                     num_word=(2,2),
                 ),

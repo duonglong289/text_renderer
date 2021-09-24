@@ -9,7 +9,7 @@ from typing import List, Tuple, Union
 import numpy as np
 from PIL.Image import Image as PILImage
 
-from text_renderer.effect import Effects
+from text_renderer.effect import Effects, CustomEffects
 from text_renderer.layout import Layout
 from text_renderer.layout.same_line import SameLineLayout
 
@@ -156,6 +156,7 @@ class RenderCfg:
 
     corpus: Union["Corpus", List["Corpus"]]
     corpus_effects: Union[Effects, List[Effects]] = None
+    custom_corpus_effects: Union[CustomEffects, List[CustomEffects]] = None
     bg_dir: Path = None
     pre_load_bg_img: bool = True
     layout: Layout = SameLineLayout()
