@@ -21,24 +21,9 @@ class DictCorpusCfg(CorpusCfg):
 
     args:
         text_paths (List[Path]): Text file paths
-        separator (str): word separator of texts and join char in get_text()
-        num_word (Tuple[int, int]): Range of output word count  [min_length, max_length)
-        filter_by_chars (bool): If True, filtering text by character set
-        chars_file (Path): Character set
-        filter_font (bool): Only work when filter_by_chars is True. If True filter font file
-                            by intersection of font support chars with chars file
-        filter_font_min_support_chars (int): If intersection of font support chars with chars file is lower
-                                             than filter_font_min_support_chars, filter this font file.
-
     """
 
     text_paths: List[Path] = field(default_factory=list)
-    separator: str = " "
-    num_word: (int, int) = (1, 5)
-    filter_by_chars: bool = False
-    chars_file: Path = None
-    filter_font: bool = False
-    filter_font_min_support_chars: int = 100
 
 
 class DictCorpus(Corpus):
@@ -72,7 +57,7 @@ class DictCorpus(Corpus):
 
         return value
 
-    @retry
+    @retry()
     def sample(self):
         """
         This method ensures that the selected font supports all characters.

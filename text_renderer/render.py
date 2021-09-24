@@ -91,6 +91,7 @@ class Render:
         font_text = self.corpus.sample()
 
         bg = self.bg_manager.get_bg()
+        font_text.meta['bg'] = bg
         if self.cfg.text_color_cfg is not None:
             text_color = self.cfg.text_color_cfg.get_color(bg)
 
@@ -98,9 +99,10 @@ class Render:
         if self.corpus.cfg.text_color_cfg is not None:
             text_color = self.corpus.cfg.text_color_cfg.get_color(bg)
         
-        text_mask = draw_text_on_bg(
+        text_mask, char_spacings = draw_text_on_bg(
             font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
         )
+        font_text.meta['char_spacings'] = char_spacings
 
         if self.cfg.custom_corpus_effects is not None:
             text_mask, _ = self.cfg.custom_corpus_effects.apply_effects(
@@ -131,7 +133,7 @@ class Render:
 
         img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
 
-        return img, font_text.text, cropped_bg, transformed_text_mask
+        return img, font_text.meta['label'], cropped_bg, transformed_text_mask
 
     def gen_multi_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage]:
         font_texts: List[FontText] = [it.sample() for it in self.corpus]

@@ -44,7 +44,7 @@ def draw_text_on_bg(
     """
     if char_spacing == -1:
         if font_text.horizontal:
-            return _draw_text_on_bg(font_text, text_color)
+            return _draw_text_on_bg(font_text, text_color), -1
         else:
             char_spacing = 0
 
@@ -66,7 +66,6 @@ def draw_text_on_bg(
         height = sum(heights)
 
     char_spacings = []
-
     cs_height = font_text.size[1]
     for i in range(len(font_text.text)):
         if isinstance(char_spacing, list) or isinstance(char_spacing, tuple):
@@ -98,7 +97,7 @@ def draw_text_on_bg(
             c_y += chars_size[i][1] + char_spacings[i]
         text_mask = text_mask.rotate(90, expand=True)
 
-    return text_mask
+    return text_mask, char_spacings
 
 
 def _draw_text_on_bg(
