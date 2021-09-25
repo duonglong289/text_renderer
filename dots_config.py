@@ -20,7 +20,7 @@ def story_data():
             perspective_transform=NormPerspectiveTransformCfg(20, 20, 1.5),
             corpus=DictCorpus(
                 DictCorpusCfg(
-                    text_paths=[CURRENT_DIR / "example_data/text/foo.json"],
+                    text_paths=[CURRENT_DIR / "example_data/text/dots_corpus.json"],
                     font_dir=CURRENT_DIR / "example_data/font",
                     font_size=(20, 50),
                     char_spacing=(0.5,0.5)

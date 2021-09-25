@@ -2,10 +2,10 @@
 
 set - e
 
-rm output/images/*
+rm output/* -r
 
-python3 dev_main.py \
---config dev_config.py \
+python3 dots_main.py \
+--config dots_config.py \
 --dataset img \
 --num_processes 0 \
 --log_period 100
