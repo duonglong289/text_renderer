@@ -7,6 +7,7 @@ from .line import Line
 from .padding import Padding
 from .imgaug_effect import ImgAugEffect, Emboss, MotionBlur
 from .custom_dots import CustomDots
+from .custom_boxes import CustomBoxes
 
 
 __all__ = [
@@ -23,5 +24,6 @@ __all__ = [
     "ImgAugEffect",
     "Emboss",
     "MotionBlur",
-    "CustomDots"
+    "CustomDots",
+    "CustomBoxes"
 ]

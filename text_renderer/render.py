@@ -1,22 +1,24 @@
-from typing import Tuple, List
-
-from PIL import Image
-from loguru import logger
+from typing import List, Tuple
 
 import cv2
 import numpy as np
+from loguru import logger
+from PIL import Image
 from PIL.Image import Image as PILImage
 from PIL.ImageFont import FreeTypeFont
 from tenacity import retry
+from tenacity.stop import stop_after_attempt
 
 from text_renderer.bg_manager import BgManager
 from text_renderer.config import RenderCfg
-from text_renderer.utils.draw_utils import draw_text_on_bg, transparent_img
 from text_renderer.utils import utils
-from text_renderer.utils.errors import PanicError
-from text_renderer.utils.math_utils import PerspectiveTransform
 from text_renderer.utils.bbox import BBox
+from text_renderer.utils.draw_utils import (draw_text_on_bg,
+                                            draw_text_on_bg_with_boxes,
+                                            transparent_img)
+from text_renderer.utils.errors import PanicError
 from text_renderer.utils.font_text import FontText
+from text_renderer.utils.math_utils import PerspectiveTransform
 from text_renderer.utils.types import FontColor, is_list
 
 
@@ -45,7 +47,7 @@ class Render:
 
         self.bg_manager = BgManager(cfg.bg_dir, cfg.pre_load_bg_img)
 
-    @retry
+    @retry()
     def __call__(self, *args, **kwargs) -> Tuple[np.ndarray, str]:
         try:
             if self._should_apply_layout():
@@ -99,9 +101,14 @@ class Render:
         if self.corpus.cfg.text_color_cfg is not None:
             text_color = self.corpus.cfg.text_color_cfg.get_color(bg)
         
-        text_mask, char_spacings = draw_text_on_bg(
-            font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
-        )
+        if font_text.meta['is_box']:
+            text_mask, char_spacings = draw_text_on_bg_with_boxes(
+                font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
+            )
+        else:
+            text_mask, char_spacings = draw_text_on_bg(
+                font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
+            )
         font_text.meta['char_spacings'] = char_spacings
 
         if self.cfg.custom_corpus_effects is not None:

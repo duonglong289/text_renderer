@@ -26,7 +26,7 @@ class CustomDots(Effect):
             tb_in_offset=(0, 3),
             tb_out_offset=(0, 3),
             line_pos_p=(0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1),
-            dots_intensity=(10, 100),
+            dots_intensity=(10, 30),
             alpha=(110,255),
             background_color_base=True,
             color_cfg: 'TextColorCfg' = None,
@@ -57,45 +57,39 @@ class CustomDots(Effect):
     def apply_bottom(self, img: PILImage, text_bbox: BBox, font_text) -> Tuple[PILImage, BBox]:
         if font_text.meta['underdot_index'] != []:
             background = font_text.meta['bg']
+            text = font_text.text
+            xy = font_text.xy # xy is the top left of the font text.
+            font = font_text.font
+            char_spacings = font_text.meta['char_spacings']
+
             in_offset, thickness, out_offset, fill_color, outline_color = \
                 self._get_tb_param(background=background)
+
             new_w = img.width
             new_h = img.height + thickness + in_offset + out_offset
-
             new_img = transparent_img((new_w, new_h))
             new_img.paste(img, (0, 0))
-
             draw = ImageDraw.Draw(new_img)
 
             text_bbox.bottom += in_offset
-            
+            text_bbox.bottom += thickness
+            text_bbox.bottom += out_offset
+
             for underdot_index in font_text.meta['underdot_index']:
-                text = font_text.text
-
-                # xy is the top left of the font text.
-                xy = font_text.xy
-                font = font_text.font
-                char_spacings = font_text.meta['char_spacings']
-
                 left_bottom, right_bottom = self._get_rendered_underdot_index(underdot_index, text, xy, font, char_spacings)
                 line_pixels = xiaoline(left_bottom, right_bottom)
 
                 dot_step = random.randint(self.dots_intensity[0], self.dots_intensity[1])
                 if random.random() < 0.5:
-                    for i, pts in enumerate(line_pixels):
-                        if i % dot_step == 0:
-                            x, y = pts
-                            draw.ellipse((x-thickness, y-thickness, x+thickness, y+thickness), 
-                                        fill = fill_color, outline = outline_color)
+                    draw_shape = draw.ellipse
                 else:
-                    for i, pts in enumerate(line_pixels):
-                        if i % dot_step == 0:
-                            x, y = pts
-                            draw.rectangle((x-thickness, y-thickness, x+thickness, y+thickness), 
-                                        fill = fill_color, outline = outline_color)                    
+                    draw_shape = draw.rectangle
 
-            text_bbox.bottom += thickness
-            text_bbox.bottom += out_offset
+                for i, pts in enumerate(line_pixels):
+                    if i % dot_step == 0:
+                        x, y = pts
+                        draw_shape((x-thickness, y-thickness, x+thickness, y+thickness), 
+                                    fill = fill_color, outline = outline_color)
         else:
             new_img = img
 
@@ -145,13 +139,13 @@ class CustomDots(Effect):
             if bottom1 == 0:
                 bottom1 = bottom2
         else:
-            char_widths = []
+            char_rights = []
             for c in text:
                 size = font.getsize(c)
-                char_widths.append(size[0])
+                char_rights.append(size[0])
 
-            right1 = sum(char_widths[:start]) + sum(char_spacings[:start])
-            right2 = sum(char_widths[:end]) + sum(char_spacings[:end])
+            right1 = sum(char_rights[:start]) + sum(char_spacings[:start])
+            right2 = sum(char_rights[:end]) + sum(char_spacings[:end])
             _, bottom = font.getsize(text[:end])
             bottom1 = bottom2 = bottom
 

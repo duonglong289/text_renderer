@@ -102,7 +102,10 @@ if __name__ == "__main__":
     generator_cfgs = get_cfg(args.config)
 
     for generator_cfg in generator_cfgs:
-        num_image = len(generator_cfg.render_cfg.corpus)
+        if generator_cfg.num_image != 0:
+            num_image = generator_cfg.num_image
+        else:
+            num_image = len(generator_cfg.render_cfg.corpus)
         db_writer_process = DBWriterProcess(
             dataset_cls, data_queue, generator_cfg, args.log_period
         )

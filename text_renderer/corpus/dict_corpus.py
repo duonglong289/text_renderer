@@ -45,6 +45,7 @@ class DictCorpus(Corpus):
                 self.texts = json.load(f)
 
         self.keys = [*self.texts]
+        random.shuffle(self.keys)
         self.current_key_index = 0
 
     def __len__(self):
@@ -70,9 +71,24 @@ class DictCorpus(Corpus):
             text_info = self.get_text()
             text = text_info['text']
             meta = {k:v for k,v in text_info.items() if k!='text'}
-            for underdot_index in meta['underdot_index']:
-                text = text.replace('.',' ',underdot_index[1]-underdot_index[0]+1)
+
+            if 'underdot_index' in meta:
+                for underdot_index in meta['underdot_index']:
+                    text = text.replace('.',' ',underdot_index[1]-underdot_index[0]+1)
+            
+            if 'label' not in meta:
+                if 'key' in meta and 'value' in meta:
+                    meta['label'] = {
+                        'key': meta['key'],
+                        'value': meta['value']
+                    }
+            
+            if 'non_box_index' in meta:
+                meta['is_box'] = True
+            else:
+                meta['is_box'] = False
         except Exception as e:
+            self.current_key_index -= 1
             logger.exception(e)
             raise RetryError()
 
