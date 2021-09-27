@@ -13,20 +13,20 @@ CURRENT_DIR = Path(os.path.abspath(os.path.dirname(__file__)))
 def story_data():
     return GeneratorCfg(
         num_image=1000,
-        save_dir=CURRENT_DIR / "output_boxes",
+        save_dir=CURRENT_DIR / "output_checkmarks",
         render_cfg=RenderCfg(
             bg_dir=CURRENT_DIR / "example_data/bg",
             height=32,
             perspective_transform=NormPerspectiveTransformCfg(20, 20, 1.5),
             corpus=DictCorpus(
                 DictCorpusCfg(
-                    text_paths=[CURRENT_DIR / "example_data/text/processed_box_corpus.json"],
+                    text_paths=[CURRENT_DIR / "example_data/text/checkmark_corpus.json"],
                     font_dir=CURRENT_DIR / "example_data/font/vie",
-                    font_size=(20, 50),
-                    char_spacing=(0.2,0.2)
+                    font_size=(40, 70),
+                    char_spacing=(-0.2,0.2)
                 ),
             ),
-            # custom_corpus_effects=CustomEffects(CustomBoxes(1, thickness=(1, 2))),
+            # custom_corpus_effects=CustomEffects(CustomCheckmarks(1, thickness=(1, 2))),
             corpus_effects=Effects(
                 [
                     DropoutRand(p=.1, dropout_p=(0.3, 0.5)),

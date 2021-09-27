@@ -14,8 +14,9 @@ from text_renderer.config import RenderCfg
 from text_renderer.utils import utils
 from text_renderer.utils.bbox import BBox
 from text_renderer.utils.draw_utils import (draw_text_on_bg,
-                                            draw_text_on_bg_with_boxes,
                                             transparent_img)
+from text_renderer.utils.draw_boxes import draw_text_on_bg_with_boxes
+from text_renderer.utils.draw_checkmarks import draw_text_on_bg_with_checkmarks
 from text_renderer.utils.errors import PanicError
 from text_renderer.utils.font_text import FontText
 from text_renderer.utils.math_utils import PerspectiveTransform
@@ -103,6 +104,10 @@ class Render:
         
         if font_text.meta['is_box']:
             text_mask, char_spacings = draw_text_on_bg_with_boxes(
+                font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
+            )
+        elif font_text.meta['is_checkmark']:
+            text_mask, char_spacings = draw_text_on_bg_with_checkmarks(
                 font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
             )
         else:

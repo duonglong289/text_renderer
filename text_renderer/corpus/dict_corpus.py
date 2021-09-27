@@ -82,11 +82,17 @@ class DictCorpus(Corpus):
                         'key': meta['key'],
                         'value': meta['value']
                     }
-            
+
             if 'non_box_index' in meta:
                 meta['is_box'] = True
             else:
                 meta['is_box'] = False
+
+            if 'checkmark_index' in meta:
+                meta['is_checkmark'] = True
+                meta['label'] = ' '.join(text.split())
+            else:
+                meta['is_chechmark'] = False
         except Exception as e:
             self.current_key_index -= 1
             logger.exception(e)

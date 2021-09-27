@@ -16,7 +16,7 @@ if typing.TYPE_CHECKING:
 
 from .base_effect import Effect
 
-class CustomBoxes(Effect):
+class CustomCheckmarks(Effect):
     def __init__(
             self,
             p=0.5,
