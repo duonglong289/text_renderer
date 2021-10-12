@@ -28,3 +28,5 @@ output_dots
 output_boxes
 output_checkmarks
 *tar.gz
+foo*
+example_data/bg

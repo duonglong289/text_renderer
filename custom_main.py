@@ -6,7 +6,7 @@ from multiprocessing.context import Process
 
 import cv2
 from loguru import logger
-
+import tqdm
 from text_renderer.config import get_cfg, GeneratorCfg
 from text_renderer.dataset import LmdbDataset, ImgDataset
 from text_renderer.render import Render
@@ -113,7 +113,7 @@ if __name__ == "__main__":
 
         if args.num_processes == 0:
             process_setup(generator_cfg.render_cfg)
-            for _ in range(num_image):
+            for _ in tqdm.tqdm(range(num_image)):
                 generate_img(data_queue)
             data_queue.put(STOP_TOKEN)
             db_writer_process.join()

@@ -6,8 +6,7 @@ import numpy as np
 import random
 from text_renderer.utils.font_text import FontText
 from text_renderer.utils.errors import PanicError
-import string
-from pathlib import Path
+from .draw_bezier_curve import draw_bezier_x_checkmark, draw_bezier_v_checkmark
 
 def transparent_img(size: Tuple[int, int]) -> PILImage:
     """
@@ -46,9 +45,8 @@ def draw_text_on_bg_with_checkmarks(
     kv_border = text.find(': ')
     font = font_text.font
     checkmark_index = font_text.meta['checkmark_index']
-    checkmark_type = font_text.meta['checkmark_type']
-    line_color = (random.randint(0,50), random.randint(0,50), random.randint(0,50))
-    line_width = random.randint(2,5)
+    # checkmark_type = font_text.meta['checkmark_type']
+    checkmark_color, checkmark_width, checkmark_fill, box_color, box_line_width, box_rectangle_rate = get_checkmark_params()
 
     base_font_size = font.size
     if random.random() < 0.4:
@@ -68,11 +66,12 @@ def draw_text_on_bg_with_checkmarks(
     cs_height = font_text.size[1]
     char_spacings = [int(np.random.uniform(*char_spacing)* cs_height)] * len(text)
 
-    coords, text_width, text_height = _get_boxes(text, key_font, value_font, char_spacings, checkmark_index, kv_border, line_width)
+    coords, text_width, text_height = _get_boxes(text, key_font, value_font, char_spacings, checkmark_index, kv_border, box_line_width)
 
-    text_mask = transparent_img((text_width+2*line_width, text_height+2*line_width))
+    text_mask = transparent_img((text_width+2*box_line_width, text_height+2*box_line_width))
     draw = ImageDraw.Draw(text_mask)
 
+    rectangle = box_rectangle_rate > random.random()
     if font_text.horizontal:
         for i, c in enumerate(font_text.text):
             if i <= kv_border:
@@ -81,25 +80,72 @@ def draw_text_on_bg_with_checkmarks(
             else:
                 if i in checkmark_index:
                     x1, y1, x2, y2 = coords[i]
+                    tl = (x1, y1)
+                    br = (x2, y2)
                     
-                    if checkmark_type[checkmark_index.index(i)] == 'box':
-                        tl = (x1, y1)
-                        tr = (x2, y1)
-                        br = (x2, y2)
-                        bl = (x1, y2)
-                        draw.line([tl, tr], fill=line_color, width=line_width)
-                        draw.line([tl, bl], fill=line_color, width=line_width)
-                        draw.line([br, tr], fill=line_color, width=line_width)
-                        draw.line([br, bl], fill=line_color, width=line_width)
+                    chmk = text[i]
+                    c = ''
+                    if chmk == 'X':
+                        tick_shape = random.choice(['square', 'circle'])
+                        tick_type = random.choice(['x', 'v'])
+                        is_dense = random.random() < 1/3
+
+                        if tick_shape == 'square':
+                            if is_dense:
+                                draw.rectangle([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
+                            else:
+                                draw.rectangle([tl, br], fill=None, outline=box_color, width=box_line_width)
+                        elif tick_shape == 'circle':
+                            if is_dense:
+                                draw.ellipse([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
+                            else:
+                                draw.ellipse([tl, br], fill=None, outline=box_color, width=box_line_width)
+                        
+                        if not is_dense:
+                            if tick_type == 'x':
+                                if checkmark_fill == 'machine':
+                                    c = random.choice(['\u2717', '\u2718'])
+                                elif checkmark_fill == 'hand':
+                                    draw = draw_bezier_x_checkmark(draw, coords[i], text_color, checkmark_width)
+                            elif tick_type == 'v':
+                                if checkmark_fill == 'machine':
+                                    c = random.choice(['\u2713', '\u2714'])
+                                elif checkmark_fill == 'hand':
+                                    draw = draw_bezier_v_checkmark(draw, coords[i], text_color, checkmark_width)
+                    else:
+                        tick_shape = random.choice(['square', 'circle'])
+                        if tick_shape == 'square':
+                            draw.rectangle([tl, br], fill=None, outline=box_color, width=box_line_width)
+                        elif tick_shape == 'circle':
+                            draw.ellipse([tl, br], fill=None, outline=box_color, width=box_line_width)
+
+                    # if chmk == '\u25a0':
+                    #     if chmk_type == '\u25a0':
+                    #         draw.rectangle([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
+                    #     else:
+                    #         draw.rectangle([tl, br], fill=None, outline=box_color, width=box_line_width)
+                    # elif chmk_type in ['\u24cd', '\u24cb', '\u25cb', '\u25cf']:
+                    #     if chmk_type == '\u25cf':
+                    #         draw.ellipse([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
+                    #     else:
+                    #         draw.ellipse([tl, br], fill=None, outline=box_color, width=box_line_width)
                     
-                    if c == 'E':
-                        c = ''
-                    elif c == 'V':
-                        # '\u1F5F8' Something wrong with dis.
-                        c = random.choice(['\u2713', '\u2714'])
-                    elif c == 'X':
-                        # '\u10102' Something wrong with dis.
-                        c = random.choice(['\u2717', '\u2718'])
+                    # if c == 'V':
+                    #     # '\u1F5F8' Something wrong with dis.
+                    #     if checkmark_fill == 'machine':
+                    #         c = random.choice(['\u2713', '\u2714'])
+                    #     elif checkmark_fill == 'hand':
+                    #         c = ''
+                    #         draw = draw_bezier_v_checkmark(draw, coords[i], text_color, checkmark_width)
+                    # elif c == 'X':
+                    #     # '\u10102' Something wrong with dis.
+                    #     if checkmark_fill == 'machine':
+                    #         c = random.choice(['\u2717', '\u2718'])
+                    #     elif checkmark_fill == 'hand':
+                    #         c = ''
+                    #         draw = draw_bezier_x_checkmark(draw, coords[i], text_color, checkmark_width)
+                    # else:
+                    #     c = ''
 
                     char_width, char_height = special_char_font.getmask(c).size
                     x1 += int((x2-x1)/2 - char_width/2)
@@ -156,3 +202,51 @@ def _get_boxes(text, key_font, value_font, char_spacings, checkmark_index, kv_bo
 
     text_width = right
     return coords, text_width, text_height
+
+
+def get_checkmark_params():
+    ### Checkmark color
+    checkmark_color_list = ['red', 'blue', 'black']
+    checkmark_color = random.choice(checkmark_color_list)
+    if checkmark_color == 'red':
+        r = random.randint(200, 255)
+        g = random.randint(0, 50)
+        b = random.randint(0, 50)
+        checkmark_color = (r,g,b)
+    elif checkmark_color == 'blue':
+        r = random.randint(0, 50)
+        g = random.randint(0, 50)
+        b = random.randint(200, 255)
+        checkmark_color = (r,g,b)
+    else:
+        r = random.randint(0, 50)
+        g = random.randint(0, 50)
+        b = random.randint(0, 50)
+        checkmark_color = (r,g,b)
+    ##############################
+
+    ### Checkmark width
+    checkmark_width = random.randint(6, 12)
+    ##############################
+
+    ### Checkmark type
+    checkmark_fill_list = ['hand', 'machine']
+    checkmark_fill = random.choice(checkmark_fill_list)
+    ##############################
+
+    ### Box color
+    r = random.randint(0, 50)
+    g = random.randint(0, 50)
+    b = random.randint(0, 50)
+    box_color = (r,g,b)
+    ##############################
+
+    ### Box line width
+    box_line_width = random.randint(2,6)
+    ##############################
+
+    ### Box rectangle rate, if not rectanlge then ellipse
+    box_rectangle_rate = 0.8
+    ##############################
+
+    return checkmark_color, checkmark_width, checkmark_fill, box_color, box_line_width, box_rectangle_rate

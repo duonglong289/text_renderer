@@ -90,7 +90,7 @@ class DictCorpus(Corpus):
 
             if 'checkmark_index' in meta:
                 meta['is_checkmark'] = True
-                meta['label'] = ' '.join(text.split())
+                # meta['label'] = ' '.join(text.split())
             else:
                 meta['is_chechmark'] = False
         except Exception as e:

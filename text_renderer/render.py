@@ -97,10 +97,9 @@ class Render:
         font_text.meta['bg'] = bg
         if self.cfg.text_color_cfg is not None:
             text_color = self.cfg.text_color_cfg.get_color(bg)
-
         # corpus text_color has higher priority than RenderCfg.text_color_cfg
-        if self.corpus.cfg.text_color_cfg is not None:
-            text_color = self.corpus.cfg.text_color_cfg.get_color(bg)
+        # if self.corpus.cfg.text_color_cfg is not None:
+        #     text_color = self.corpus.cfg.text_color_cfg.get_color(bg)
         
         if font_text.meta['is_box']:
             text_mask, char_spacings = draw_text_on_bg_with_boxes(

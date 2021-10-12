@@ -5,7 +5,7 @@ from abc import abstractmethod
 from dataclasses import dataclass
 from pathlib import Path
 from typing import List, Tuple, Union
-
+import random
 import numpy as np
 from PIL.Image import Image as PILImage
 
@@ -116,6 +116,40 @@ class SimpleTextColorCfg(TextColorCfg):
         g = np.random.randint(0, int(mean * 0.7))
         b = np.random.randint(0, int(mean * 0.7))
         text_color = (r, g, b, alpha)
+
+        return text_color
+
+
+@dataclass
+class RandomColorCfg(TextColorCfg):
+    """
+    Randomly use mean value of background image
+    """
+    def get_color(self, bg_img: PILImage) -> Tuple[int, int, int, int]:
+        alpha = 255
+
+        red = (
+            random.randint(200, 255),
+            random.randint(0,50),
+            random.randint(0,50),
+            alpha
+        )
+
+        blue = (
+            random.randint(0,50),
+            random.randint(0,50),
+            random.randint(200, 255),
+            alpha
+        )
+        
+        black = (
+            random.randint(0, 50),
+            random.randint(0, 50),
+            random.randint(0, 50),
+            alpha
+        )
+        
+        text_color = random.choice([red, blue, black])
 
         return text_color
 

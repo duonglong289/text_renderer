@@ -2,7 +2,7 @@
 
 set - e
 
-rm output_checkmarks/images/*
+rm -r output_checkmarks
 mkdir output_checkmarks
 
 python3 custom_main.py \
