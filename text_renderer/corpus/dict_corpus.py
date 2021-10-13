@@ -92,7 +92,7 @@ class DictCorpus(Corpus):
                 meta['is_checkmark'] = True
                 # meta['label'] = ' '.join(text.split())
             else:
-                meta['is_chechmark'] = False
+                meta['is_checkmark'] = False
         except Exception as e:
             self.current_key_index -= 1
             logger.exception(e)
