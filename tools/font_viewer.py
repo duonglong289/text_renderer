@@ -19,7 +19,7 @@ def main(name: str, font_dir: str):
     for font_path in font_manager.font_paths:
         font = font_manager._get_font(font_path, font_size)
         font_text = FontText(font, text, font_path)
-        text_mask = draw_text_on_bg(font_text, text_color)
+        text_mask = draw_text_on_bg(font_text, text_color)[0]
         st.text(Path(font_path).name)
         st.image(text_mask)
 
