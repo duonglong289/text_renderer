@@ -2,6 +2,7 @@ from pathlib import Path
 import json
 import os
 import tqdm
+import multiprocessing as mp
 
 def convert_from_text_renderer_format(folder_path):
     img_list = list(Path(folder_path).glob('**/*.jpg'))
@@ -38,4 +39,7 @@ def convert_from_text_renderer_format(folder_path):
     tgt.close()
 
 if __name__=='__main__':
-    convert_from_text_renderer_format('output_checkmarks')
+    output = ['output_boxes', 'output_checkmarks', 'output_dots']
+    Pool = mp.Pool(processes=mp.cpu_count())
+    Pool.map(convert_from_text_renderer_format, output)
+    Pool.close()
