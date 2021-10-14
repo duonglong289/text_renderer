@@ -44,17 +44,14 @@ class DictCorpus(Corpus):
             with open(text_path, "r", encoding="utf-8") as f:
                 self.texts = json.load(f)
 
-        self.keys = [*self.texts]
-        random.shuffle(self.keys)
-        self.current_key_index = 0
+        self.keys = set([*self.texts])
 
     def __len__(self):
         return len(self.keys)
 
     def get_text(self):
-        key = self.keys[self.current_key_index]
-        value = self.texts[key]
-        self.current_key_index += 1
+        self.current_key = self.keys.pop()
+        value = self.texts[self.current_key]
 
         return value
 
@@ -67,36 +64,31 @@ class DictCorpus(Corpus):
             FontText: A FontText object contains text and font.
 
         """
-        try:
-            text_info = self.get_text()
-            text = text_info['text']
-            meta = {k:v for k,v in text_info.items() if k!='text'}
+        text_info = self.get_text()
+        text = text_info['text']
+        meta = {k:v for k,v in text_info.items() if k!='text'}
 
-            if 'underdot_index' in meta:
-                for underdot_index in meta['underdot_index']:
-                    text = text.replace('.',' ',underdot_index[1]-underdot_index[0]+1)
-            
-            if 'label' not in meta:
-                if 'key' in meta and 'value' in meta:
-                    meta['label'] = {
-                        'key': meta['key'],
-                        'value': meta['value']
-                    }
+        if 'underdot_index' in meta:
+            for underdot_index in meta['underdot_index']:
+                text = text.replace('.',' ',underdot_index[1]-underdot_index[0]+1)
+        
+        if 'label' not in meta:
+            if 'key' in meta and 'value' in meta:
+                meta['label'] = {
+                    'key': meta['key'],
+                    'value': meta['value']
+                }
 
-            if 'non_box_index' in meta:
-                meta['is_box'] = True
-            else:
-                meta['is_box'] = False
+        if 'non_box_index' in meta:
+            meta['is_box'] = True
+        else:
+            meta['is_box'] = False
 
-            if 'checkmark_index' in meta:
-                meta['is_checkmark'] = True
-                # meta['label'] = ' '.join(text.split())
-            else:
-                meta['is_checkmark'] = False
-        except Exception as e:
-            self.current_key_index -= 1
-            logger.exception(e)
-            raise RetryError()
+        if 'checkmark_index' in meta:
+            meta['is_checkmark'] = True
+            # meta['label'] = ' '.join(text.split())
+        else:
+            meta['is_checkmark'] = False
 
         font, support_chars, font_path = self.font_manager.get_font()
         status, intersect = self.font_manager.check_support(text, support_chars)
@@ -105,6 +97,7 @@ class DictCorpus(Corpus):
                 f"{self.__class__.__name__} {font_path} not support chars: {intersect}"
             )
             logger.debug(err_msg)
+            self.keys.add(self.current_key)
             raise RetryError(err_msg)
 
         return FontText(font, text, font_path, self.cfg.horizontal, meta)
