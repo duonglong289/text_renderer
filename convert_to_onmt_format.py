@@ -20,9 +20,10 @@ def convert_from_text_renderer_format(folder_path):
             next_img_name = str(img_list[idx+1]).split('/')[-1].split('.')[0]
             if label == labels['labels'][next_img_name]:
                 continue
-
-        if 'key' in label:
-            text = label['key'] + ': ' + label['value']
+        
+        if isinstance(label, dict):
+            if 'key' in label:
+                text = label['key'] + ': ' + label['value']
         else:
             text = label
 
