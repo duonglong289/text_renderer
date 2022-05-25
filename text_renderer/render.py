@@ -6,6 +6,7 @@ from loguru import logger
 from PIL import Image
 from PIL.Image import Image as PILImage
 from PIL.ImageFont import FreeTypeFont
+import PIL
 from tenacity import retry
 from tenacity.stop import stop_after_attempt
 
@@ -21,6 +22,8 @@ from text_renderer.utils.errors import PanicError
 from text_renderer.utils.font_text import FontText
 from text_renderer.utils.math_utils import PerspectiveTransform
 from text_renderer.utils.types import FontColor, is_list
+
+import random
 
 
 class Render:
@@ -48,9 +51,10 @@ class Render:
 
         self.bg_manager = BgManager(cfg.bg_dir, cfg.pre_load_bg_img)
 
-    @retry()
+    @retry(stop=stop_after_attempt(50))
     def __call__(self, *args, **kwargs) -> Tuple[np.ndarray, str]:
         try:
+            # import ipdb; ipdb.set_trace()
             if self._should_apply_layout():
                 img, text, cropped_bg, transformed_text_mask = self.gen_multi_corpus()
             else:
@@ -114,17 +118,16 @@ class Render:
                 font_text, text_color, char_spacing=self.corpus.cfg.char_spacing
             )
         font_text.meta['char_spacings'] = char_spacings
-
         if self.cfg.custom_corpus_effects is not None:
             text_mask, _ = self.cfg.custom_corpus_effects.apply_effects(
                 text_mask, BBox.from_size(text_mask.size), font_text=font_text
             )
 
-        if self.cfg.corpus_effects is not None:
+        if self.cfg.corpus_effects is not None :
             text_mask, _ = self.cfg.corpus_effects.apply_effects(
                 text_mask, BBox.from_size(text_mask.size)
             )
-
+        
         if self.cfg.perspective_transform is not None:
             transformer = PerspectiveTransform(self.cfg.perspective_transform)
             # TODO: refactor this, now we must call get_transformed_size to call gen_warp_matrix
@@ -143,7 +146,7 @@ class Render:
             transformed_text_mask = text_mask
 
         img, cropped_bg = self.paste_text_mask_on_bg(bg, transformed_text_mask)
-
+        # img = Image.blend(img, bg, random.uniform(0, 0.2))
         return img, font_text.meta['label'], cropped_bg, transformed_text_mask
 
     def gen_multi_corpus(self) -> Tuple[PILImage, str, PILImage, PILImage]:
@@ -199,7 +202,10 @@ class Render:
         if self.cfg.perspective_transform is not None:
             transformer = PerspectiveTransform(self.cfg.perspective_transform)
             # TODO: refactor this, now we must call get_transformed_size to call gen_warp_matrix
-            _ = transformer.get_transformed_size(merged_text_mask.size)
+            try:
+                _ = transformer.get_transformed_size(merged_text_mask.size)
+            except:
+                import ipdb; ipdb.set_trace()
 
             (
                 transformed_text_mask,

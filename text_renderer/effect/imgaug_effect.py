@@ -25,8 +25,11 @@ class ImgAugEffect(Effect):
             return img, text_bbox
 
         word_img = np.array(img)
+        shape = word_img.shape
+        if len(shape) >2:
+            word_img[:,:,:3] = self.aug.augment_image(word_img[:,:,:3])
         # TODO: test self.aug.augment_bounding_boxes()
-        return Image.fromarray(self.aug.augment_image(word_img)), text_bbox
+        return Image.fromarray(word_img), text_bbox
 
 
 class Emboss(ImgAugEffect):

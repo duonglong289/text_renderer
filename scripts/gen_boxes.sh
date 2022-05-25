@@ -9,4 +9,4 @@ python3 custom_main.py \
 --config boxes_config.py \
 --dataset img \
 --num_processes 0 \
---log_period 100
+--log_period 1

@@ -1,6 +1,6 @@
 import os
 import json
-from typing import Dict
+from typing import Dict, Union
 
 import lmdb
 import cv2
@@ -107,7 +107,7 @@ class ImgDataset(Dataset):
         size = self._data["sizes"][name]
         return {"image": image, "label": label, "size": size}
 
-    def read_size(self, name: str) -> [int, int]:
+    def read_size(self, name: str) -> Union[int, int]:
         return self._data["sizes"][name]
 
     def read_count(self) -> int:
@@ -158,7 +158,7 @@ class LmdbDataset(Dataset):
 
         return {"image": image, "label": label, "size": size}
 
-    def read_size(self, name: str) -> [int, int]:
+    def read_size(self, name: str) -> Union[int, int]:
         """
 
         Args:

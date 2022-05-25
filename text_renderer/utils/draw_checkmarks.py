@@ -67,57 +67,62 @@ def draw_text_on_bg_with_checkmarks(
     char_spacings = [int(np.random.uniform(*char_spacing)* cs_height)] * len(text)
 
     coords, text_width, text_height = _get_boxes(text, key_font, value_font, char_spacings, checkmark_index, kv_border, box_line_width)
-
     text_mask = transparent_img((text_width+2*box_line_width, text_height+2*box_line_width))
     draw = ImageDraw.Draw(text_mask)
 
     rectangle = box_rectangle_rate > random.random()
     if font_text.horizontal:
         for i, c in enumerate(font_text.text):
-            if i <= kv_border:
+            if i in checkmark_index:
                 x1, y1, x2, y2 = coords[i]
-                draw.text((x1, y1), c, fill=text_color, font=key_font)
-            else:
-                if i in checkmark_index:
-                    x1, y1, x2, y2 = coords[i]
-                    tl = (x1, y1)
-                    br = (x2, y2)
-                    
-                    chmk = text[i]
-                    c = ''
-                    if chmk == 'X':
-                        tick_shape = random.choice(['square', 'circle'])
-                        tick_type = random.choice(['x', 'v'])
-                        is_dense = random.random() < 1/3
-
-                        if tick_shape == 'square':
-                            if is_dense:
-                                draw.rectangle([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
-                            else:
-                                draw.rectangle([tl, br], fill=None, outline=box_color, width=box_line_width)
-                        elif tick_shape == 'circle':
-                            if is_dense:
-                                draw.ellipse([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
-                            else:
-                                draw.ellipse([tl, br], fill=None, outline=box_color, width=box_line_width)
-                        
-                        if not is_dense:
-                            if tick_type == 'x':
-                                if checkmark_fill == 'machine':
-                                    c = random.choice(['\u2717', '\u2718'])
-                                elif checkmark_fill == 'hand':
-                                    draw = draw_bezier_x_checkmark(draw, coords[i], text_color, checkmark_width)
-                            elif tick_type == 'v':
-                                if checkmark_fill == 'machine':
-                                    c = random.choice(['\u2713', '\u2714'])
-                                elif checkmark_fill == 'hand':
-                                    draw = draw_bezier_v_checkmark(draw, coords[i], text_color, checkmark_width)
+                tl = (x1, y1)
+                br = (x2, y2)
+                
+                chmk = text[i]
+                c = ''
+                if chmk == 'X':
+                    tick_shape = random.choice(['square', 'circle'])
+                    if random.random() < 0.2:
+                        tick_shape = 'circle'
                     else:
-                        tick_shape = random.choice(['square', 'circle'])
-                        if tick_shape == 'square':
+                        tick_shape = 'square'
+                    # tick_type = random.choice(['x', 'v'])
+                    if random.random() < 0.2:
+                        tick_type = 'v'
+                    else:
+                        tick_type = 'x'
+
+                    is_dense = random.random() < 0.05
+
+                    if not is_dense:
+                        if tick_type == 'x':
+                            if checkmark_fill == 'machine':
+                                c = random.choice(['\u2717', '\u2718'])
+                            elif checkmark_fill == 'hand':
+                                text_mask = draw_bezier_x_checkmark(text_mask, coords[i], checkmark_color, checkmark_width=checkmark_width)
+                        elif tick_type == 'v':
+                            if checkmark_fill == 'machine':
+                                c = random.choice(['\u2713', '\u2714'])
+                            elif checkmark_fill == 'hand':
+                                text_mask = draw_bezier_v_checkmark(text_mask, coords[i], checkmark_color, checkmark_width=checkmark_width)
+
+                    if tick_shape == 'square':
+                        if is_dense:
+                            draw.rectangle([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
+                        else:
                             draw.rectangle([tl, br], fill=None, outline=box_color, width=box_line_width)
-                        elif tick_shape == 'circle':
+                    elif tick_shape == 'circle':
+                        if is_dense:
+                            draw.ellipse([tl, br], fill=checkmark_color, outline=box_color, width=box_line_width)
+                        else:
                             draw.ellipse([tl, br], fill=None, outline=box_color, width=box_line_width)
+                    
+                else:
+                    tick_shape = random.choice(['square', 'circle'])
+                    if tick_shape == 'square':
+                        draw.rectangle([tl, br], fill=None, outline=box_color, width=box_line_width)
+                    elif tick_shape == 'circle':
+                        draw.ellipse([tl, br], fill=None, outline=box_color, width=box_line_width)
 
                     # if chmk == '\u25a0':
                     #     if chmk_type == '\u25a0':
@@ -147,14 +152,14 @@ def draw_text_on_bg_with_checkmarks(
                     # else:
                     #     c = ''
 
-                    char_width, char_height = special_char_font.getmask(c).size
-                    x1 += int((x2-x1)/2 - char_width/2)
-                    y1 += int((y2-y1)/2 - char_height/2)
-                    offset_x, offset_y = special_char_font.getoffset(c)
-                    draw.text((x1-offset_x, y1-offset_y), c, fill=text_color, font=special_char_font)
-                else:
-                    x1, y1, x2, y2 = coords[i]
-                    draw.text((x1, y1), c, fill=text_color, font=value_font)
+                char_width, char_height = special_char_font.getmask(c).size
+                x1 += int((x2-x1)/2 - char_width/2)
+                y1 += int((y2-y1)/2 - char_height/2)
+                offset_x, offset_y = special_char_font.getoffset(c)
+                draw.text((x1-offset_x, y1-offset_y), c, fill=text_color, font=special_char_font)
+            else:
+                x1, y1, x2, y2 = coords[i]
+                draw.text((x1, y1), c, fill=text_color, font=value_font)
     else:
         raise PanicError(f'Non-horizontal text is not supported.')
 
@@ -171,7 +176,7 @@ def _get_boxes(text, key_font, value_font, char_spacings, checkmark_index, kv_bo
     key_bottom = key_font.getsize(text)[1]
     value_top = value_font.getoffset(text)[1]
     value_bottom = value_font.getsize(text)[1]
-    box_length = int((value_bottom-value_top)*random.uniform(1,1.2))
+    box_length = int((value_bottom-value_top)*random.uniform(0.98,1.05))
     text_height = int(max(box_length, key_bottom, value_bottom))
 
     for i, char in enumerate(text):
@@ -206,43 +211,57 @@ def _get_boxes(text, key_font, value_font, char_spacings, checkmark_index, kv_bo
 
 def get_checkmark_params():
     ### Checkmark color
-    checkmark_color_list = ['red', 'blue', 'black']
-    checkmark_color = random.choice(checkmark_color_list)
+    # checkmark_color = random.choice(checkmark_color_list)
+    if random.random() < 0.7:
+        checkmark_color = 'blue'
+    else:
+        checkmark_color_list = ['red', 'black']
+        checkmark_color = random.choice(checkmark_color_list)
+
     if checkmark_color == 'red':
-        r = random.randint(200, 255)
-        g = random.randint(0, 50)
-        b = random.randint(0, 50)
+        r = random.randint(150, 255)
+        g = random.randint(0, 100)
+        b = random.randint(0, 100)
         checkmark_color = (r,g,b)
     elif checkmark_color == 'blue':
-        r = random.randint(0, 50)
-        g = random.randint(0, 50)
-        b = random.randint(200, 255)
+        r = random.randint(0, 100)
+        g = random.randint(0, 100)
+        b = random.randint(150, 255)
         checkmark_color = (r,g,b)
     else:
-        r = random.randint(0, 50)
-        g = random.randint(0, 50)
-        b = random.randint(0, 50)
+        r = random.randint(0, 60)
+        g = random.randint(0, 60)
+        b = random.randint(0, 60)
         checkmark_color = (r,g,b)
     ##############################
 
     ### Checkmark width
-    checkmark_width = random.randint(6, 12)
+    checkmark_width = (1, 8)
     ##############################
 
     ### Checkmark type
     checkmark_fill_list = ['hand', 'machine']
-    checkmark_fill = random.choice(checkmark_fill_list)
+    # checkmark_fill = random.choice(checkmark_fill_list)
+    if random.random() < 0.1:
+        checkmark_fill = 'machine'
+    else:
+        checkmark_fill = 'hand'
     ##############################
 
     ### Box color
-    r = random.randint(0, 50)
-    g = random.randint(0, 50)
-    b = random.randint(0, 50)
+    if random.random() < 0.5:
+        r = random.randint(0, 70)
+        g = random.randint(0, 70)
+        b = random.randint(0, 70)
+    else:
+        r = random.randint(0, 70)
+        g = random.randint(0, 70)
+        b = random.randint(127, 255)
     box_color = (r,g,b)
     ##############################
 
     ### Box line width
-    box_line_width = random.randint(2,6)
+    box_line_width = random.randint(2,7)
     ##############################
 
     ### Box rectangle rate, if not rectanlge then ellipse
